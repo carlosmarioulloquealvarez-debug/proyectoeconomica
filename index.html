@@ -1,0 +1,1812 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full bg-black text-white selection:bg-white selection:text-black">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RECRUITPRO // TERMINAL FINANCIERO HUD [CECAR 2026]</title>
+
+  <!-- Typography: Space Grotesk (Display) & JetBrains Mono / Share Tech Mono (Technical) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;600;700&family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,700;0,800;1,400&family=Space+Grotesk:wght@500;700;900&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Chart.js & Lucide Icons -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            mono: ['"JetBrains Mono"', 'monospace'],
+            tech: ['"Chakra Petch"', 'sans-serif'],
+            display: ['"Space Grotesk"', 'sans-serif'],
+          },
+          colors: {
+            hud: {
+              black: '#000000',
+              deep: '#050507',
+              surface: '#0B0B0E',
+              elevated: '#121216',
+              border: 'rgba(255, 255, 255, 0.15)',
+              borderStrong: 'rgba(255, 255, 255, 0.40)',
+              bright: '#FFFFFF',
+              muted: '#7A7A85',
+              faint: '#3E3E48',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* ==========================================================================
+       INDUSTRIAL HUD / AEROSPACE CYBERPUNK STYLES (STRICT MONOCHROME)
+       ========================================================================== */
+    
+    /* Technical Grid Overlay */
+    .blueprint-grid {
+      background-size: 32px 32px;
+      background-image: 
+        linear-gradient(to right, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+    }
+    
+    .radial-scanner {
+      background: radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.06) 0%, transparent 75%);
+    }
+
+    /* Scanlines effect (Ultra subtle) */
+    .scanlines {
+      background: linear-gradient(
+        to bottom,
+        rgba(255,255,255,0),
+        rgba(255,255,255,0) 50%,
+        rgba(0, 0, 0, 0.3) 50%,
+        rgba(0, 0, 0, 0.3)
+      );
+      background-size: 100% 4px;
+    }
+
+    /* Chamfer Cuts using clip-path (NO BORDER RADIUS) */
+    .chamfer-sm {
+      clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px));
+    }
+    .chamfer-md {
+      clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
+    }
+    .chamfer-tl-br {
+      clip-path: polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px);
+    }
+    .chamfer-tr {
+      clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 0 100%);
+    }
+
+    /* Corner Bracket Crosshairs */
+    .hud-brackets {
+      position: relative;
+    }
+    .hud-brackets::before, .hud-brackets::after {
+      content: "";
+      position: absolute;
+      width: 6px;
+      height: 6px;
+      pointer-events: none;
+      border-color: #FFFFFF;
+    }
+    .hud-brackets::before {
+      top: -1px;
+      left: -1px;
+      border-top: 2px solid;
+      border-left: 2px solid;
+    }
+    .hud-brackets::after {
+      bottom: -1px;
+      right: -1px;
+      border-bottom: 2px solid;
+      border-right: 2px solid;
+    }
+
+    /* Top Corner Ticks */
+    .corner-tick-tl {
+      position: relative;
+    }
+    .corner-tick-tl::before {
+      content: "+";
+      position: absolute;
+      top: 2px;
+      left: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: rgba(255, 255, 255, 0.4);
+      line-height: 1;
+    }
+
+    /* High-tech Range Sliders */
+    input[type=range] {
+      -webkit-appearance: none;
+      background: transparent;
+    }
+    input[type=range]:focus {
+      outline: none;
+    }
+    input[type=range]::-webkit-slider-runnable-track {
+      width: 100%;
+      height: 2px;
+      cursor: crosshair;
+      background: rgba(255, 255, 255, 0.25);
+    }
+    input[type=range]::-webkit-slider-thumb {
+      height: 14px;
+      width: 10px;
+      border-radius: 0px;
+      background: #FFFFFF;
+      cursor: ew-resize;
+      -webkit-appearance: none;
+      margin-top: -6px;
+      border: 1px solid #000000;
+      box-shadow: 0 0 8px rgba(255, 255, 255, 0.8);
+      transition: all 0.1s ease;
+    }
+    input[type=range]::-webkit-slider-thumb:hover {
+      background: #FFFFFF;
+      transform: scaleY(1.3);
+    }
+
+    /* Glitch / Blinking Animation */
+    @keyframes hud-blink {
+      0%, 49% { opacity: 1; }
+      50%, 100% { opacity: 0; }
+    }
+    .hud-cursor {
+      display: inline-block;
+      width: 7px;
+      height: 13px;
+      background-color: #FFFFFF;
+      vertical-align: middle;
+      animation: hud-blink 1s infinite;
+    }
+
+    /* Custom Table Scrollbar */
+    ::-webkit-scrollbar {
+      width: 4px;
+      height: 4px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #000000;
+      border-left: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #FFFFFF;
+      border-radius: 0px;
+    }
+  </style>
+</head>
+<body class="h-full bg-black text-white font-mono antialiased overflow-x-hidden relative scanlines">
+
+  <!-- Ambient Blueprint Grid Layer -->
+  <div class="fixed inset-0 pointer-events-none blueprint-grid radial-scanner z-0"></div>
+
+  <!-- Main Root Layout -->
+  <div class="relative z-10 min-h-screen flex flex-col">
+
+    <!-- =========================================================================
+         TOP SYSTEM HEADER // BLOOMBERG / HUD INDUSTRIAL
+         ========================================================================= -->
+    <header class="border-b border-white/20 bg-black/90 backdrop-blur-md sticky top-0 z-50">
+      <div class="max-w-[1720px] mx-auto px-4 lg:px-6 py-2.5 flex items-center justify-between gap-4">
+        
+        <!-- Left: Brand Ident -->
+        <div class="flex items-center gap-4">
+          <div class="flex items-center gap-2 bg-white text-black px-2.5 py-1 text-xs font-black tracking-widest font-tech border border-white">
+            <span class="inline-block w-2 h-2 bg-black animate-pulse"></span>
+            RECRUITPRO
+          </div>
+          <div class="hidden sm:block border-l border-white/20 pl-4">
+            <div class="text-[10px] tracking-[0.25em] text-white/50 uppercase font-tech">
+              SISTEMA DE CONTROL FINANCIERO // INGENIERÍA ECONÓMICA
+            </div>
+            <div class="text-xs text-white font-tech font-bold tracking-wider flex items-center gap-2">
+              <span>CECAR · FACULTAD DE INGENIERÍA</span>
+              <span class="text-white/40">//</span>
+              <span class="text-white/80">VER 6.04-RELEASE</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Center: Live Telemetry Metadata -->
+        <div class="hidden xl:flex items-center gap-6 text-[11px] text-white/60 font-mono">
+          <div class="flex items-center gap-2 border border-white/15 px-3 py-1 bg-hud-surface">
+            <span class="text-white/30">SYS_STATUS:</span>
+            <span class="text-white font-bold flex items-center gap-1.5">
+              <span class="w-1.5 h-1.5 bg-white"></span> OPERACIONAL
+            </span>
+          </div>
+          <div class="flex items-center gap-2 border border-white/15 px-3 py-1 bg-hud-surface">
+            <span class="text-white/30">CPPC_RATE:</span>
+            <span class="text-white font-bold">13.88% EXACT</span>
+          </div>
+          <div class="flex items-center gap-2 border border-white/15 px-3 py-1 bg-hud-surface">
+            <span class="text-white/30">HORIZON:</span>
+            <span class="text-white font-bold">5 PERIODOS (FCL)</span>
+          </div>
+        </div>
+
+        <!-- Right: Action Commands (Solid Sharp Buttons) -->
+        <div class="flex items-center gap-2">
+          <!-- Excel Download Button -->
+          <a href="Evaluacion_Financiera_RecruitPro_CECAR.xlsx" download 
+             class="group relative inline-flex items-center gap-2 px-3 py-1.5 text-xs font-bold uppercase tracking-wider bg-transparent hover:bg-white text-white hover:text-black border border-white transition-all duration-150">
+            <i data-lucide="download" class="w-3.5 h-3.5"></i>
+            <span>EXP_XLSX</span>
+            <div class="absolute -top-1 -right-1 w-1.5 h-1.5 bg-white group-hover:bg-black"></div>
+          </a>
+
+          <!-- Print / PDF Trigger -->
+          <button onclick="window.print()" 
+                  class="group relative inline-flex items-center gap-2 px-3 py-1.5 text-xs font-bold uppercase tracking-wider bg-transparent hover:bg-white text-white hover:text-black border border-white/40 hover:border-white transition-all duration-150">
+            <i data-lucide="printer" class="w-3.5 h-3.5"></i>
+            <span class="hidden md:inline">IMPRIMIR_PDF</span>
+          </button>
+
+          <!-- System Time Code -->
+          <div class="hidden sm:flex border border-white/20 px-2.5 py-1 text-xs text-white/80 font-mono bg-hud-surface">
+            <span id="live-time-code">12:00:00 UTC</span>
+          </div>
+        </div>
+
+      </div>
+    </header>
+
+    <!-- Sub-Header Technical Bar: Badges & Decisional Stamped Seals -->
+    <section class="border-b border-white/15 bg-hud-deep/80 px-4 lg:px-6 py-2">
+      <div class="max-w-[1720px] mx-auto flex flex-wrap items-center justify-between gap-3 text-xs">
+        
+        <!-- Barcode / Military Style Stamped Badges -->
+        <div class="flex items-center flex-wrap gap-2 sm:gap-3">
+          <!-- Badge 1: CECAR Rubric Stamp -->
+          <div class="flex items-center border border-white bg-black px-2.5 py-0.5 text-[11px] font-bold tracking-wider">
+            <span class="text-white mr-2">█▌█▌▌█</span>
+            <span>RÚBRICA SOCIOFORMATIVA 100% [4.5 - 5.0]</span>
+          </div>
+
+          <!-- Badge 2: Decisional Stamp -->
+          <div class="flex items-center border border-dashed border-white/60 bg-hud-surface px-2.5 py-0.5 text-[11px] font-bold tracking-wider text-white">
+            <span class="inline-block w-1.5 h-1.5 bg-white mr-2"></span>
+            DICTAMEN: VIABLE Y RECOMENDADO
+          </div>
+
+          <!-- Badge 3: Architecture Spec -->
+          <div class="hidden md:flex items-center border border-white/20 px-2 py-0.5 text-[10px] text-white/70">
+            MODO: WEB SAAS B2B // NATIVO PHP
+          </div>
+        </div>
+
+        <!-- Terminal Status Output line -->
+        <div class="text-[11px] text-white/50 tracking-wider flex items-center gap-2">
+          <span>CONSOLE: READY</span>
+          <span class="hud-cursor"></span>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- =========================================================================
+         COMMAND TERMINAL TAB NAVIGATION (STARK / HUD STYLE)
+         ========================================================================= -->
+    <nav class="border-b border-white/20 bg-black sticky top-[49px] z-40">
+      <div class="max-w-[1720px] mx-auto px-4 lg:px-6">
+        <div class="flex items-center overflow-x-auto no-scrollbar gap-0 border-l border-white/20" id="tab-nav-bar">
+          
+          <button data-tab="tab-dashboard" class="tab-btn active px-4 py-3 text-xs font-tech font-bold uppercase tracking-wider border-r border-white/20 transition-all flex items-center gap-2 whitespace-nowrap bg-white text-black">
+            <span>[01]</span>
+            <span>DASHBOARD EJECUTIVO</span>
+          </button>
+
+          <button data-tab="tab-capex-opex" class="tab-btn px-4 py-3 text-xs font-tech font-bold uppercase tracking-wider border-r border-white/20 text-white/60 hover:text-white hover:bg-white/5 transition-all flex items-center gap-2 whitespace-nowrap">
+            <span>[02]</span>
+            <span>COSTOS CAPEX // OPEX</span>
+          </button>
+
+          <button data-tab="tab-wacc-debt" class="tab-btn px-4 py-3 text-xs font-tech font-bold uppercase tracking-wider border-r border-white/20 text-white/60 hover:text-white hover:bg-white/5 transition-all flex items-center gap-2 whitespace-nowrap">
+            <span>[03]</span>
+            <span>CRÉDITO & CPPC 13.88%</span>
+          </button>
+
+          <button data-tab="tab-cashflow-fcl" class="tab-btn px-4 py-3 text-xs font-tech font-bold uppercase tracking-wider border-r border-white/20 text-white/60 hover:text-white hover:bg-white/5 transition-all flex items-center gap-2 whitespace-nowrap">
+            <span>[04]</span>
+            <span>FLUJO DE CAJA LIBRE</span>
+          </button>
+
+          <button data-tab="tab-sensitivity-sim" class="tab-btn px-4 py-3 text-xs font-tech font-bold uppercase tracking-wider border-r border-white/20 text-white/60 hover:text-white hover:bg-white/5 transition-all flex items-center gap-2 whitespace-nowrap">
+            <span>[05]</span>
+            <span>PUNTO EQ. // SIMULADOR</span>
+          </button>
+
+          <button data-tab="tab-legal-ethics" class="tab-btn px-4 py-3 text-xs font-tech font-bold uppercase tracking-wider border-r border-white/20 text-white/60 hover:text-white hover:bg-white/5 transition-all flex items-center gap-2 whitespace-nowrap">
+            <span>[06]</span>
+            <span>LEGALTECH // ÉTICA IA</span>
+          </button>
+
+        </div>
+      </div>
+    </nav>
+
+    <!-- =========================================================================
+         MAIN CONTENT AREA // HUD CHASSIS
+         ========================================================================= -->
+    <main class="max-w-[1720px] w-full mx-auto p-4 lg:p-6 flex-1 flex flex-col gap-6">
+
+      <!-- =====================================================================
+           TAB 1: DASHBOARD EJECUTIVO // HIGH-DENSITY HUD
+           ===================================================================== -->
+      <div id="tab-dashboard" class="tab-content flex flex-col gap-6">
+
+        <!-- 6 Core KPI Terminal Boxes (Sharp Geometry with chamfer corners) -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
+          
+          <!-- KPI 1 -->
+          <div class="bg-hud-surface border border-white/25 p-4 relative group hover:border-white transition-all hud-brackets">
+            <div class="flex items-center justify-between text-[10px] text-white/40 tracking-widest font-mono uppercase mb-2">
+              <span>METRIC_01 // CAPEX</span>
+              <span class="w-1.5 h-1.5 bg-white"></span>
+            </div>
+            <div class="text-[9px] text-white/60 uppercase">INVERSIÓN INICIAL</div>
+            <div class="text-2xl font-black font-tech tracking-tight text-white my-1">$95.0M <span class="text-xs font-normal text-white/40">COP</span></div>
+            <div class="text-[10px] text-white/50 border-t border-white/10 pt-1.5 flex justify-between">
+              <span>DEUDA: 40%</span>
+              <span>EQUITY: 60%</span>
+            </div>
+          </div>
+
+          <!-- KPI 2 -->
+          <div class="bg-hud-surface border border-white/25 p-4 relative group hover:border-white transition-all hud-brackets">
+            <div class="flex items-center justify-between text-[10px] text-white/40 tracking-widest font-mono uppercase mb-2">
+              <span>METRIC_02 // WACC</span>
+              <span class="w-1.5 h-1.5 bg-white"></span>
+            </div>
+            <div class="text-[9px] text-white/60 uppercase">TASA DE CORTE (CPPC)</div>
+            <div class="text-2xl font-black font-tech tracking-tight text-white my-1">13.88%</div>
+            <div class="text-[10px] text-white/50 border-t border-white/10 pt-1.5 flex justify-between">
+              <span>TASA RENTA: 35%</span>
+              <span class="text-white font-bold">[RÚBRICA C2]</span>
+            </div>
+          </div>
+
+          <!-- KPI 3 -->
+          <div class="bg-hud-surface border border-white/40 p-4 relative group hover:border-white transition-all hud-brackets bg-white/5">
+            <div class="flex items-center justify-between text-[10px] text-white/60 tracking-widest font-mono uppercase mb-2">
+              <span>METRIC_03 // VPN</span>
+              <span class="w-2 h-2 bg-white"></span>
+            </div>
+            <div class="text-[9px] text-white uppercase font-bold">VALOR PRESENTE NETO</div>
+            <div class="text-2xl font-black font-tech tracking-tight text-white my-1">+$491.4M <span class="text-xs font-normal text-white/60">COP</span></div>
+            <div class="text-[10px] text-white border-t border-white/20 pt-1.5 flex justify-between font-bold">
+              <span>VPN &gt; 0</span>
+              <span class="bg-white text-black px-1 text-[9px]">GENERADOR VALOR</span>
+            </div>
+          </div>
+
+          <!-- KPI 4 -->
+          <div class="bg-hud-surface border border-white/25 p-4 relative group hover:border-white transition-all hud-brackets">
+            <div class="flex items-center justify-between text-[10px] text-white/40 tracking-widest font-mono uppercase mb-2">
+              <span>METRIC_04 // TIR</span>
+              <span class="w-1.5 h-1.5 bg-white"></span>
+            </div>
+            <div class="text-[9px] text-white/60 uppercase">RENTABILIDAD INTERNA</div>
+            <div class="text-2xl font-black font-tech tracking-tight text-white my-1">91.86%</div>
+            <div class="text-[10px] text-white/50 border-t border-white/10 pt-1.5 flex justify-between">
+              <span>CPPC: 13.88%</span>
+              <span class="text-white font-bold">[TIR &gt;&gt; CPPC]</span>
+            </div>
+          </div>
+
+          <!-- KPI 5 -->
+          <div class="bg-hud-surface border border-white/25 p-4 relative group hover:border-white transition-all hud-brackets">
+            <div class="flex items-center justify-between text-[10px] text-white/40 tracking-widest font-mono uppercase mb-2">
+              <span>METRIC_05 // RBC</span>
+              <span class="w-1.5 h-1.5 bg-white"></span>
+            </div>
+            <div class="text-[9px] text-white/60 uppercase">RELACIÓN BENEFICIO/COSTO</div>
+            <div class="text-2xl font-black font-tech tracking-tight text-white my-1">6.17x</div>
+            <div class="text-[10px] text-white/50 border-t border-white/10 pt-1.5 flex justify-between">
+              <span>VP / I0</span>
+              <span>$6.17 POR CADA $1</span>
+            </div>
+          </div>
+
+          <!-- KPI 6 -->
+          <div class="bg-hud-surface border border-white/25 p-4 relative group hover:border-white transition-all hud-brackets">
+            <div class="flex items-center justify-between text-[10px] text-white/40 tracking-widest font-mono uppercase mb-2">
+              <span>METRIC_06 // PAYBACK</span>
+              <span class="w-1.5 h-1.5 bg-white"></span>
+            </div>
+            <div class="text-[9px] text-white/60 uppercase">RETORNO DESCONTADO (PRI)</div>
+            <div class="text-2xl font-black font-tech tracking-tight text-white my-1">2.09 <span class="text-xs font-normal text-white/40">AÑOS</span></div>
+            <div class="text-[10px] text-white/50 border-t border-white/10 pt-1.5 flex justify-between">
+              <span>MES 25.1</span>
+              <span>HORIZONTE 5A</span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Terminal Section 1: Main Chart & Mathematical Synthesis Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+          <!-- Chart Chassis (2 Cols) -->
+          <div class="lg:col-span-2 border border-white/25 bg-hud-surface p-5 flex flex-col justify-between hud-brackets">
+            <!-- Header bar of chart -->
+            <div class="flex items-center justify-between border-b border-white/15 pb-3 mb-4">
+              <div class="flex items-center gap-3">
+                <span class="w-2 h-4 bg-white"></span>
+                <div>
+                  <h3 class="text-sm font-bold tracking-wider font-tech uppercase text-white">
+                    PROYECCIÓN DE FLUJOS LIBRES VS FLUJOS DESCONTADOS (AÑOS 0 AL 5)
+                  </h3>
+                  <div class="text-[10px] text-white/50 font-mono tracking-wide">
+                    FLUX_ENGINE // BASE: COP MILLONES // TASA CORTE CPPC = 13.88%
+                  </div>
+                </div>
+              </div>
+              <div class="text-right hidden sm:block">
+                <span class="inline-block border border-white/30 px-2 py-0.5 text-[10px] text-white/70">
+                  HORIZONTE: 5 PERIODOS
+                </span>
+              </div>
+            </div>
+
+            <!-- Canvas Container -->
+            <div class="h-[320px] w-full relative">
+              <canvas id="hudFlowChart"></canvas>
+            </div>
+
+            <!-- Chart Footer Legend / Ticks -->
+            <div class="border-t border-white/15 pt-3 mt-4 grid grid-cols-2 sm:grid-cols-3 gap-2 text-[11px] text-white/60">
+              <div class="flex items-center gap-2">
+                <span class="w-3 h-3 bg-white border border-white"></span>
+                <span>FCL Nominal</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="w-3 h-3 bg-white/30 border border-white/60"></span>
+                <span>FCL Descontado (13.88%)</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="w-3 h-0.5 bg-white"></span>
+                <span>Recuperación Acumulada</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Side Panel: Decisional Audit & Synthesis -->
+          <div class="border border-white/25 bg-hud-surface p-5 flex flex-col justify-between hud-brackets">
+            <div>
+              <div class="flex items-center gap-2 border-b border-white/15 pb-3 mb-4">
+                <span class="w-2 h-4 bg-white"></span>
+                <h3 class="text-sm font-bold tracking-wider font-tech uppercase text-white">
+                  DICTAMEN DE INGENIERÍA ECONÓMICA
+                </h3>
+              </div>
+
+              <!-- Terminal Diagnostic Stream -->
+              <div class="space-y-3 text-xs leading-relaxed text-white/80 font-mono">
+                <p>
+                  <span class="text-white font-bold">&gt; AUDIT_CHECK:</span> RecruitPro evidencia una tasa interna de retorno del <strong class="text-white">91.86%</strong>, superando en 77.98 puntos porcentuales la tasa de corte exigida (<strong class="text-white">13.88%</strong>).
+                </p>
+                <p>
+                  <span class="text-white font-bold">&gt; CAPITAL_SHIELD:</span> El escudo fiscal derivado de la deuda corporativa (40%) genera un ahorro acumulado de <strong class="text-white">COP $7.009.724</strong>, reduciendo el costo efectivo de la deuda a <strong class="text-white">10.40% E.A.</strong>
+                </p>
+                <p>
+                  <span class="text-white font-bold">&gt; RESILIENCIA:</span> El punto de equilibrio del primer año se sitúa en <strong class="text-white">16 clientes</strong> (frente a 23 proyectados), permitiendo un margen de seguridad del <strong class="text-white">30.4%</strong>.
+                </p>
+                <p>
+                  <span class="text-white font-bold">&gt; APP_STORE_TAX:</span> La arquitectura Web SaaS evita la pérdida del <strong class="text-white">15% al 30%</strong> en comisiones de tiendas móviles, protegiendo el margen libre de caja.
+                </p>
+              </div>
+            </div>
+
+            <!-- Terminal Stamped Conclusion -->
+            <div class="border border-white p-3 bg-white text-black font-mono text-xs mt-4">
+              <div class="font-bold flex items-center justify-between">
+                <span>[VEREDICTO]: FACTIBLE</span>
+                <span>SCORE: 5.0 / 5.0</span>
+              </div>
+              <div class="text-[10px] mt-1 text-black/80">
+                PROYECTO RENTABLE, SOSTENIBLE Y DE RIESGO TECNOLÓGICO CONTROLADO.
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Terminal Section 2: Full Socioformative CECAR Rubric Breakdown -->
+        <div class="border border-white/25 bg-hud-surface p-5 hud-brackets">
+          <div class="flex items-center justify-between border-b border-white/15 pb-3 mb-4">
+            <div class="flex items-center gap-3">
+              <span class="w-2 h-4 bg-white"></span>
+              <div>
+                <h3 class="text-sm font-bold tracking-wider font-tech uppercase text-white">
+                  MATRIZ DE EVALUACIÓN SOCIOFORMATIVA // CECAR (100%)
+                </h3>
+                <div class="text-[10px] text-white/50 font-mono tracking-wide">
+                  CRITERIOS C1 A C5 · DESCRIPTOR DE LOGRO EXCELENTE (4.5 - 5.0)
+                </div>
+              </div>
+            </div>
+            <span class="border border-white px-2 py-0.5 text-xs font-bold text-white uppercase bg-white/5">
+              100% CUMPLIDO
+            </span>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-xs text-left border-collapse font-mono">
+              <thead>
+                <tr class="border-b border-white/20 bg-hud-elevated text-white/60">
+                  <th class="py-2.5 px-3 uppercase tracking-wider font-tech">Criterio</th>
+                  <th class="py-2.5 px-3 uppercase tracking-wider font-tech text-center">Pond.</th>
+                  <th class="py-2.5 px-3 uppercase tracking-wider font-tech">Descriptor Nivel Excelente (4.5 - 5.0)</th>
+                  <th class="py-2.5 px-3 uppercase tracking-wider font-tech">Evidencia de Implementación en RecruitPro</th>
+                  <th class="py-2.5 px-3 uppercase tracking-wider font-tech text-right">Calificación</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-white/10 text-white/80">
+                <tr class="hover:bg-white/5">
+                  <td class="py-3 px-3 font-bold text-white">C1. Estructura de Costos</td>
+                  <td class="py-3 px-3 text-center text-white font-bold">20%</td>
+                  <td class="py-3 px-3">Clasifica con exactitud CAPEX y OPEX fijos/variables. Justifica On-Premise vs Cloud AWS, licenciamiento LegalTech y salarios dev.</td>
+                  <td class="py-3 px-3 text-white/70">Célula dev (5 roles: $60.75M), setup AWS ($6.5M), LegalTech ($6.2M), pentesting OWASP ($5.0M). Cuadro comparativo On-Premise vs Cloud AWS.</td>
+                  <td class="py-3 px-3 text-right"><span class="border border-white bg-white text-black px-1.5 py-0.5 text-[10px] font-bold">5.0 / 5.0</span></td>
+                </tr>
+                <tr class="hover:bg-white/5">
+                  <td class="py-3 px-3 font-bold text-white">C2. Modelo de Crédito y CPPC</td>
+                  <td class="py-3 px-3 text-center text-white font-bold">15%</td>
+                  <td class="py-3 px-3">Construye la tabla de amortización (cuota fija) deduciendo el escudo fiscal de intereses. Calcula el CPPC = 13.88%.</td>
+                  <td class="py-3 px-3 text-white/70">Deuda 40% ($38M al 16% E.A.) + Equity 60% ($57M al 16.20% E.A.). Cuota anual $11.6M con escudo fiscal de $7.0M acumulados. CPPC = 13.88% exacto.</td>
+                  <td class="py-3 px-3 text-right"><span class="border border-white bg-white text-black px-1.5 py-0.5 text-[10px] font-bold">5.0 / 5.0</span></td>
+                </tr>
+                <tr class="hover:bg-white/5">
+                  <td class="py-3 px-3 font-bold text-white">C3. Flujo de Caja y Métricas</td>
+                  <td class="py-3 px-3 text-center text-white font-bold">25%</td>
+                  <td class="py-3 px-3">Proyecta el Flujo de Caja Libre a 5 años sumando amortizaciones no desembolsables. Fórmulas: VPN, TIR, BC, Payback o PRI.</td>
+                  <td class="py-3 px-3 text-white/70">FCL a 5 años reintegrando $19.0M/año de software amortizable. VPN: +$491.38M, TIR: 91.86%, RBC: 6.17x, PRI Descontado: 2.09 años.</td>
+                  <td class="py-3 px-3 text-right"><span class="border border-white bg-white text-black px-1.5 py-0.5 text-[10px] font-bold">5.0 / 5.0</span></td>
+                </tr>
+                <tr class="hover:bg-white/5">
+                  <td class="py-3 px-3 font-bold text-white">C4. Punto Eq. y Sensibilidad</td>
+                  <td class="py-3 px-3 text-center text-white font-bold">20%</td>
+                  <td class="py-3 px-3">Determina el Margen de Contribución Unitario y Punto de Equilibrio Operativo. Matriz multivariable: dólar, ventas y tasas.</td>
+                  <td class="py-3 px-3 text-white/70">MCU: $4.30M (93.84%). Punto de equilibrio: 16 clientes. Matriz de sensibilidad cruzada evaluando TRM ($3.8k a $5.0k), ventas (-30% a +30%) y Kd (12% a 20%).</td>
+                  <td class="py-3 px-3 text-right"><span class="border border-white bg-white text-black px-1.5 py-0.5 text-[10px] font-bold">5.0 / 5.0</span></td>
+                </tr>
+                <tr class="hover:bg-white/5">
+                  <td class="py-3 px-3 font-bold text-white">C5. LegalTech, Ética e IA</td>
+                  <td class="py-3 px-3 text-center text-white font-bold">20%</td>
+                  <td class="py-3 px-3">Sustenta Web vs Móvil (comisiones 15-30% App Stores), Habeas Data/GDPR, uso ético/crítico de IA (TIC-01) y compromiso ambiental.</td>
+                  <td class="py-3 px-3 text-white/70">Ahorro de hasta $110M en comisiones Apple/Google. RetentionService.php (purga 24m Ley 1581), screening ciego en AiService.php (sin sesgos) y Green IT.</td>
+                  <td class="py-3 px-3 text-right"><span class="border border-white bg-white text-black px-1.5 py-0.5 text-[10px] font-bold">5.0 / 5.0</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- =====================================================================
+           TAB 2: CRITERIO C1 - COSTOS CAPEX / OPEX & ARQUITECTURA
+           ===================================================================== -->
+      <div id="tab-capex-opex" class="tab-content hidden flex flex-col gap-6">
+        
+        <!-- CAPEX Breakdown Table -->
+        <div class="border border-white/25 bg-hud-surface p-5 hud-brackets">
+          <div class="flex items-center justify-between border-b border-white/15 pb-3 mb-4">
+            <div class="flex items-center gap-3">
+              <span class="w-2 h-4 bg-white"></span>
+              <div>
+                <h3 class="text-sm font-bold tracking-wider font-tech uppercase text-white">
+                  INVERSIÓN INICIAL (CAPEX - AÑO 0): TOTAL COP $95.000.000
+                </h3>
+                <div class="text-[10px] text-white/50 font-mono tracking-wide">
+                  DETALLE DE CÉLULA DEV, INFRAESTRUCTURA CLOUD Y LICENCIAMIENTO LEGALTECH
+                </div>
+              </div>
+            </div>
+            <span class="border border-white bg-white text-black px-2.5 py-1 text-xs font-bold font-mono">
+              CAPEX_TOTAL = $95.000.000
+            </span>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-xs text-left border-collapse font-mono">
+              <thead>
+                <tr class="border-b border-white/20 bg-hud-elevated text-white/60">
+                  <th class="py-2 px-3 uppercase tracking-wider font-tech">Ítem / Rol</th>
+                  <th class="py-2 px-3 uppercase tracking-wider font-tech">Especialidad / Perfil</th>
+                  <th class="py-2 px-3 uppercase tracking-wider font-tech text-center">Dedicación</th>
+                  <th class="py-2 px-3 uppercase tracking-wider font-tech text-right">Costo Mes</th>
+                  <th class="py-2 px-3 uppercase tracking-wider font-tech text-right">Total (COP)</th>
+                  <th class="py-2 px-3 uppercase tracking-wider font-tech text-center">Categoría</th>
+                  <th class="py-2 px-3 uppercase tracking-wider font-tech">Fundamento Técnico Arquitectural</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-white/10 text-white/80">
+                <tr class="hover:bg-white/5">
+                  <td class="py-2.5 px-3 font-bold text-white">Tech Lead / Fullstack Senior</td>
+                  <td class="py-2.5 px-3">Ing. Software Senior (PHP/JS/Docker)</td>
+                  <td class="py-2.5 px-3 text-center">4.0 Meses</td>
+                  <td class="py-2.5 px-3 text-right">$5.500.000</td>
+                  <td class="py-2.5 px-3 text-right font-bold text-white">$22.000.000</td>
+                  <td class="py-2.5 px-3 text-center"><span class="border border-white/30 px-1 py-0.5 text-[10px]">CÉLULA</span></td>
+                  <td class="py-2.5 px-3 text-white/60">Liderazgo técnico, arquitectura backend modular, seguridad y pipelines.</td>
+                </tr>
+                <tr class="hover:bg-white/5">
+                  <td class="py-2.5 px-3 font-bold text-white">Backend &amp; AI Engineer</td>
+                  <td class="py-2.5 px-3">Especialista NLP / Parser / ML</td>
+                  <td class="py-2.5 px-3 text-center">4.0 Meses</td>
+                  <td class="py-2.5 px-3 text-right">$5.000.000</td>
+                  <td class="py-2.5 px-3 text-right font-bold text-white">$20.000.000</td>
+                  <td class="py-2.5 px-3 text-center"><span class="border border-white/30 px-1 py-0.5 text-[10px]">CÉLULA</span></td>
+                  <td class="py-2.5 px-3 text-white/60">Motor AiService.php, taxonomía de habilidades y scoring ATS.</td>
+                </tr>
+                <tr class="hover:bg-white/5">
+                  <td class="py-2.5 px-3 font-bold text-white">UI/UX Designer &amp; Frontend</td>
+                  <td class="py-2.5 px-3">Diseñador UI/UX (Figma/CSS Moderno)</td>
+                  <td class="py-2.5 px-3 text-center">3.0 Meses</td>
+                  <td class="py-2.5 px-3 text-right">$4.000.000</td>
+                  <td class="py-2.5 px-3 text-right font-bold text-white">$12.000.000</td>
+                  <td class="py-2.5 px-3 text-center"><span class="border border-white/30 px-1 py-0.5 text-[10px]">CÉLULA</span></td>
+                  <td class="py-2.5 px-3 text-white/60">Visor Split-Screen, Kanban interactivo, diseño responsive.</td>
+                </tr>
+                <tr class="hover:bg-white/5">
+                  <td class="py-2.5 px-3 font-bold text-white">QA Automation &amp; Pentester</td>
+                  <td class="py-2.5 px-3">Ing. Pruebas y Ciberseguridad</td>
+                  <td class="py-2.5 px-3 text-center">2.5 Meses</td>
+                  <td class="py-2.5 px-3 text-right">$3.500.000</td>
+                  <td class="py-2.5 px-3 text-right font-bold text-white">$8.750.000</td>
+                  <td class="py-2.5 px-3 text-center"><span class="border border-white/30 px-1 py-0.5 text-[10px]">CÉLULA</span></td>
+                  <td class="py-2.5 px-3 text-white/60">Pruebas de estrés, OWASP Top 10, validación CSRF y sanitización de PDFs.</td>
+                </tr>
+                <tr class="hover:bg-white/5">
+                  <td class="py-2.5 px-3 font-bold text-white">Product Manager / Scrum</td>
+                  <td class="py-2.5 px-3">Líder Ágil / Scrum Master</td>
+                  <td class="py-2.5 px-3 text-center">4.0 Meses</td>
+                  <td class="py-2.5 px-3 text-right">$4.500.000</td>
+                  <td class="py-2.5 px-3 text-right font-bold text-white">$18.000.000</td>
+                  <td class="py-2.5 px-3 text-center"><span class="border border-white/30 px-1 py-0.5 text-[10px]">CÉLULA</span></td>
+                  <td class="py-2.5 px-3 text-white/60">Gestión de sprints, control de entregables y roadmap MVP.</td>
+                </tr>
+                <tr class="hover:bg-white/5">
+                  <td class="py-2.5 px-3 font-bold text-white">Setup Arquitectura Cloud AWS</td>
+                  <td class="py-2.5 px-3">Arquitecto DevOps Cloud</td>
+                  <td class="py-2.5 px-3 text-center">1.0 Mes</td>
+                  <td class="py-2.5 px-3 text-right">$6.500.000</td>
+                  <td class="py-2.5 px-3 text-right font-bold text-white">$6.500.000</td>
+                  <td class="py-2.5 px-3 text-center"><span class="border border-white/30 px-1 py-0.5 text-[10px]">CLOUD</span></td>
+                  <td class="py-2.5 px-3 text-white/60">IaC Terraform, VPC, ECS Fargate, RDS PostgreSQL y buckets S3 KMS.</td>
+                </tr>
+                <tr class="hover:bg-white/5">
+                  <td class="py-2.5 px-3 font-bold text-white">Hardware &amp; Estaciones Dev</td>
+                  <td class="py-2.5 px-3">Laptops i7 32GB RAM + Pantallas</td>
+                  <td class="py-2.5 px-3 text-center">1.0 Mes</td>
+                  <td class="py-2.5 px-3 text-right">$4.800.000</td>
+                  <td class="py-2.5 px-3 text-right font-bold text-white">$4.800.000</td>
+                  <td class="py-2.5 px-3 text-center"><span class="border border-white/30 px-1 py-0.5 text-[10px]">ACTIVOS</span></td>
+                  <td class="py-2.5 px-3 text-white/60">Estaciones de trabajo de alto rendimiento para desarrollo y testing.</td>
+                </tr>
+                <tr class="hover:bg-white/5">
+                  <td class="py-2.5 px-3 font-bold text-white">Consultoría LegalTech &amp; RNBD</td>
+                  <td class="py-2.5 px-3">Abogado Especialista Derecho Digital</td>
+                  <td class="py-2.5 px-3 text-center">1.0 Mes</td>
+                  <td class="py-2.5 px-3 text-right">$6.200.000</td>
+                  <td class="py-2.5 px-3 text-right font-bold text-white">$6.200.000</td>
+                  <td class="py-2.5 px-3 text-center"><span class="border border-white/30 px-1 py-0.5 text-[10px]">LEGAL</span></td>
+                  <td class="py-2.5 px-3 text-white/60">Habeas Data Ley 1581/2012, GDPR y registro RNBD ante la SIC.</td>
+                </tr>
+                <tr class="hover:bg-white/5">
+                  <td class="py-2.5 px-3 font-bold text-white">Auditoría Ética Pentest OWASP</td>
+                  <td class="py-2.5 px-3">Ethical Hacker Certificado (CEH)</td>
+                  <td class="py-2.5 px-3 text-center">1.0 Mes</td>
+                  <td class="py-2.5 px-3 text-right">$5.000.000</td>
+                  <td class="py-2.5 px-3 text-right font-bold text-white">$5.000.000</td>
+                  <td class="py-2.5 px-3 text-center"><span class="border border-white/30 px-1 py-0.5 text-[10px]">SEGURIDAD</span></td>
+                  <td class="py-2.5 px-3 text-white/60">Pentesting de caja negra y verificación de inyecciones en carga de CVs.</td>
+                </tr>
+                <tr class="hover:bg-white/5">
+                  <td class="py-2.5 px-3 font-bold text-white">SSL EV &amp; Dominios Corporativos</td>
+                  <td class="py-2.5 px-3">Certificado Wildcard 2 Años</td>
+                  <td class="py-2.5 px-3 text-center">1.0 Mes</td>
+                  <td class="py-2.5 px-3 text-right">$1.250.000</td>
+                  <td class="py-2.5 px-3 text-right font-bold text-white">$1.250.000</td>
+                  <td class="py-2.5 px-3 text-center"><span class="border border-white/30 px-1 py-0.5 text-[10px]">LICENCIAS</span></td>
+                  <td class="py-2.5 px-3 text-white/60">Cifrado TLS 1.3 de grado bancario para transmisión de datos confidenciales.</td>
+                </tr>
+                <tr class="hover:bg-white/5">
+                  <td class="py-2.5 px-3 font-bold text-white">Onboarding &amp; Material Didáctico</td>
+                  <td class="py-2.5 px-3">Diseñador Instruccional / Videos</td>
+                  <td class="py-2.5 px-3 text-center">1.0 Mes</td>
+                  <td class="py-2.5 px-3 text-right">$4.500.000</td>
+                  <td class="py-2.5 px-3 text-right font-bold text-white">$4.500.000</td>
+                  <td class="py-2.5 px-3 text-center"><span class="border border-white/30 px-1 py-0.5 text-[10px]">CAPACITACIÓN</span></td>
+                  <td class="py-2.5 px-3 text-white/60">Tours interactivos en la plataforma y manuales de usuario.</td>
+                </tr>
+                <tr class="hover:bg-white/5">
+                  <td class="py-2.5 px-3 font-bold text-white">Campaña de Lanzamiento B2B</td>
+                  <td class="py-2.5 px-3">Marketing Digital B2B SaaS</td>
+                  <td class="py-2.5 px-3 text-center">1.0 Mes</td>
+                  <td class="py-2.5 px-3 text-right">$6.000.000</td>
+                  <td class="py-2.5 px-3 text-right font-bold text-white">$6.000.000</td>
+                  <td class="py-2.5 px-3 text-center"><span class="border border-white/30 px-1 py-0.5 text-[10px]">MERCADEO</span></td>
+                  <td class="py-2.5 px-3 text-white/60">Posicionamiento y adquisición de los primeros 23 clientes corporativos.</td>
+                </tr>
+              </tbody>
+              <tfoot>
+                <tr class="border-t-2 border-white bg-white text-black font-bold">
+                  <td colspan="4" class="py-2.5 px-3 text-right uppercase tracking-wider font-tech">TOTAL INVERSIÓN INICIAL (CAPEX AÑO 0):</td>
+                  <td class="py-2.5 px-3 text-right text-sm font-black">$95.000.000</td>
+                  <td colspan="2" class="py-2.5 px-3 text-xs">[100% CUBIERTO: 40% CRÉDITO // 60% EQUITY]</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+
+        <!-- Architectural Comparison: On-Premise vs Cloud AWS (Industrial Cards) -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          
+          <!-- Box 1: On-Premise -->
+          <div class="border border-white/20 bg-hud-surface p-5 hud-brackets">
+            <div class="flex items-center gap-2 border-b border-white/15 pb-2.5 mb-3 text-white/60">
+              <i data-lucide="server" class="w-4 h-4"></i>
+              <h4 class="font-tech font-bold uppercase tracking-wider text-xs">ARQUITECTURA ON-PREMISE (TRADICIONAL)</h4>
+            </div>
+            <ul class="space-y-2.5 text-xs text-white/70 font-mono">
+              <li class="flex items-start gap-2">
+                <span class="text-white/40 font-bold">[X]</span>
+                <span><strong>CAPEX Excesivo:</strong> Sobrecosto de ~$65M COP en hardware físico de datacenter, switches y rack.</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="text-white/40 font-bold">[X]</span>
+                <span><strong>Escalabilidad Inelástica:</strong> Caída del servicio ante picos masivos de convocatorias públicas.</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="text-white/40 font-bold">[X]</span>
+                <span><strong>Riesgo Ciberseguridad:</strong> Parches manuales, vulnerabilidad física y riesgo de pérdida de CVs.</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="text-white/40 font-bold">[X]</span>
+                <span><strong>Nómina de Soporte 24/7:</strong> Elevado gasto fijo en personal de climatización y redes en sitio.</span>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Box 2: Cloud AWS -->
+          <div class="border border-white bg-white/5 p-5 hud-brackets">
+            <div class="flex items-center justify-between border-b border-white pb-2.5 mb-3">
+              <div class="flex items-center gap-2 text-white">
+                <i data-lucide="cloud" class="w-4 h-4"></i>
+                <h4 class="font-tech font-bold uppercase tracking-wider text-xs">ARQUITECTURA CLOUD AWS (ELEGIDA RECRUITPRO)</h4>
+              </div>
+              <span class="bg-white text-black text-[9px] font-bold px-1.5 py-0.5">SELECCIONADA</span>
+            </div>
+            <ul class="space-y-2.5 text-xs text-white/90 font-mono">
+              <li class="flex items-start gap-2">
+                <span class="text-white font-bold">[✓]</span>
+                <span><strong>Cero CAPEX Servidores:</strong> Se ahorran $65M para invertirlos en la célula dev y LegalTech.</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="text-white font-bold">[✓]</span>
+                <span><strong>Auto-scaling Elástico:</strong> Contenedores Docker en ECS Fargate se ajustan a la demanda.</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="text-white font-bold">[✓]</span>
+                <span><strong>Seguridad Bancaria:</strong> Cifrado AES-256 (KMS) en S3, AWS WAF contra ataques DDoS/SQLi.</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="text-white font-bold">[✓]</span>
+                <span><strong>Cumplimiento LegalTech:</strong> Purga automática de CVs inactivos cumpliendo la Ley 1581/2012.</span>
+              </li>
+            </ul>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- =====================================================================
+           TAB 3: CRITERIO C2 - CRÉDITO BANCARIO & CPPC / WACC (13.88%)
+           ===================================================================== -->
+      <div id="tab-wacc-debt" class="tab-content hidden flex flex-col gap-6">
+
+        <!-- WACC Formula Box -->
+        <div class="border border-white/25 bg-hud-surface p-5 hud-brackets">
+          <div class="flex items-center justify-between border-b border-white/15 pb-3 mb-4">
+            <div class="flex items-center gap-3">
+              <span class="w-2 h-4 bg-white"></span>
+              <div>
+                <h3 class="text-sm font-bold tracking-wider font-tech uppercase text-white">
+                  DEMOSTRACIÓN MATEMÁTICA DEL CPPC / WACC = 13.88%
+                </h3>
+                <div class="text-[10px] text-white/50 font-mono tracking-wide">
+                  DEDUCCIÓN DEL ESCUDO FISCAL DE INTERESES (TASA IMPOSITIVA T = 35%)
+                </div>
+              </div>
+            </div>
+            <div class="border border-white bg-white text-black px-2.5 py-1 text-xs font-bold font-mono">
+              CPPC = 13.88% EXACT
+            </div>
+          </div>
+
+          <!-- Formula Schematic -->
+          <div class="border border-white/20 p-4 bg-black font-mono text-xs text-white/90 space-y-2 mb-4">
+            <div class="text-white/50 text-[10px]">// FÓRMULA ESTÁNDAR COSTO PROMEDIO PONDERADO DE CAPITAL</div>
+            <div class="text-sm font-bold text-white">
+              CPPC = [ Wd × Kd × (1 - T) ] + [ We × Ke ]
+            </div>
+            <div class="text-white/70">
+              CPPC = [ 0.40 × 16.00% × (1 - 0.35) ] + [ 0.60 × 16.20% ]
+            </div>
+            <div class="text-white font-bold">
+              CPPC = [ 0.40 × 10.40% ] + [ 0.60 × 16.20% ] = 4.16% + 9.72% = <span class="bg-white text-black px-1.5 py-0.5">13.88%</span>
+            </div>
+          </div>
+
+          <!-- Parameters Grid -->
+          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 text-xs">
+            <div class="border border-white/15 p-3 bg-hud-elevated">
+              <div class="text-[10px] text-white/50">PARTICIPACIÓN DEUDA (Wd)</div>
+              <div class="text-lg font-bold font-tech text-white">40.00%</div>
+              <div class="text-[10px] text-white/60">$38.000.000 COP</div>
+            </div>
+            <div class="border border-white/15 p-3 bg-hud-elevated">
+              <div class="text-[10px] text-white/50">PARTICIPACIÓN EQUITY (We)</div>
+              <div class="text-lg font-bold font-tech text-white">60.00%</div>
+              <div class="text-[10px] text-white/60">$57.000.000 COP</div>
+            </div>
+            <div class="border border-white/15 p-3 bg-hud-elevated">
+              <div class="text-[10px] text-white/50">TASA CRÉDITO (Kd)</div>
+              <div class="text-lg font-bold font-tech text-white">16.00%</div>
+              <div class="text-[10px] text-white/60">Crédito Empresarial</div>
+            </div>
+            <div class="border border-white/15 p-3 bg-hud-elevated">
+              <div class="text-[10px] text-white/50">IMPUESTO RENTA (T)</div>
+              <div class="text-lg font-bold font-tech text-white">35.00%</div>
+              <div class="text-[10px] text-white/60">Ley 2277 de 2022</div>
+            </div>
+            <div class="border border-white/15 p-3 bg-hud-elevated">
+              <div class="text-[10px] text-white/50">COSTO NETO DEUDA</div>
+              <div class="text-lg font-bold font-tech text-white">10.40%</div>
+              <div class="text-[10px] text-white/60">Kd × (1 - 0.35)</div>
+            </div>
+            <div class="border border-white/15 p-3 bg-hud-elevated">
+              <div class="text-[10px] text-white/50">COSTO EQUITY (Ke)</div>
+              <div class="text-lg font-bold font-tech text-white">16.20%</div>
+              <div class="text-[10px] text-white/60">Retorno Accionistas</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- French Amortization Table -->
+        <div class="border border-white/25 bg-hud-surface p-5 hud-brackets">
+          <div class="flex items-center justify-between border-b border-white/15 pb-3 mb-4">
+            <div class="flex items-center gap-3">
+              <span class="w-2 h-4 bg-white"></span>
+              <div>
+                <h3 class="text-sm font-bold tracking-wider font-tech uppercase text-white">
+                  TABLA DE AMORTIZACIÓN FRANCESA (CUOTA FIJA ANUAL = COP $11.605.557)
+                </h3>
+                <div class="text-[10px] text-white/50 font-mono tracking-wide">
+                  DEDUCCIÓN AÑO A AÑO DEL ESCUDO FISCAL DE INTERESES (AHORRO TOTAL: $7.009.724)
+                </div>
+              </div>
+            </div>
+            <span class="border border-white/30 px-2 py-1 text-xs font-mono text-white/80">
+              PLAZO: 5 PERIODOS
+            </span>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-xs text-left border-collapse font-mono">
+              <thead>
+                <tr class="border-b border-white/20 bg-hud-elevated text-white/60">
+                  <th class="py-2.5 px-3 uppercase tracking-wider font-tech text-center">Periodo</th>
+                  <th class="py-2.5 px-3 uppercase tracking-wider font-tech text-right">Saldo Inicial (COP)</th>
+                  <th class="py-2.5 px-3 uppercase tracking-wider font-tech text-right">Cuota Fija (COP)</th>
+                  <th class="py-2.5 px-3 uppercase tracking-wider font-tech text-right">Intereses Causados (16%)</th>
+                  <th class="py-2.5 px-3 uppercase tracking-wider font-tech text-right">Abono a Capital</th>
+                  <th class="py-2.5 px-3 uppercase tracking-wider font-tech text-right">Saldo Final (COP)</th>
+                  <th class="py-2.5 px-3 uppercase tracking-wider font-tech text-right">Escudo Fiscal (Ahorro T=35%)</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-white/10 text-white/80">
+                <tr class="hover:bg-white/5">
+                  <td class="py-2.5 px-3 text-center font-bold text-white">Año 0</td>
+                  <td class="py-2.5 px-3 text-right">-</td>
+                  <td class="py-2.5 px-3 text-right">-</td>
+                  <td class="py-2.5 px-3 text-right">-</td>
+                  <td class="py-2.5 px-3 text-right">-</td>
+                  <td class="py-2.5 px-3 text-right font-bold text-white">$38.000.000</td>
+                  <td class="py-2.5 px-3 text-right">-</td>
+                </tr>
+                <tr class="hover:bg-white/5">
+                  <td class="py-2.5 px-3 text-center font-bold text-white">Año 1</td>
+                  <td class="py-2.5 px-3 text-right">$38.000.000</td>
+                  <td class="py-2.5 px-3 text-right font-bold text-white">$11.605.557</td>
+                  <td class="py-2.5 px-3 text-right">$6.080.000</td>
+                  <td class="py-2.5 px-3 text-right">$5.525.557</td>
+                  <td class="py-2.5 px-3 text-right">$32.474.443</td>
+                  <td class="py-2.5 px-3 text-right font-bold text-white bg-white/5">$2.128.000</td>
+                </tr>
+                <tr class="hover:bg-white/5">
+                  <td class="py-2.5 px-3 text-center font-bold text-white">Año 2</td>
+                  <td class="py-2.5 px-3 text-right">$32.474.443</td>
+                  <td class="py-2.5 px-3 text-right font-bold text-white">$11.605.557</td>
+                  <td class="py-2.5 px-3 text-right">$5.195.911</td>
+                  <td class="py-2.5 px-3 text-right">$6.409.646</td>
+                  <td class="py-2.5 px-3 text-right">$26.064.798</td>
+                  <td class="py-2.5 px-3 text-right font-bold text-white bg-white/5">$1.818.569</td>
+                </tr>
+                <tr class="hover:bg-white/5">
+                  <td class="py-2.5 px-3 text-center font-bold text-white">Año 3</td>
+                  <td class="py-2.5 px-3 text-right">$26.064.798</td>
+                  <td class="py-2.5 px-3 text-right font-bold text-white">$11.605.557</td>
+                  <td class="py-2.5 px-3 text-right">$4.170.368</td>
+                  <td class="py-2.5 px-3 text-right">$7.435.189</td>
+                  <td class="py-2.5 px-3 text-right">$18.629.609</td>
+                  <td class="py-2.5 px-3 text-right font-bold text-white bg-white/5">$1.459.629</td>
+                </tr>
+                <tr class="hover:bg-white/5">
+                  <td class="py-2.5 px-3 text-center font-bold text-white">Año 4</td>
+                  <td class="py-2.5 px-3 text-right">$18.629.609</td>
+                  <td class="py-2.5 px-3 text-right font-bold text-white">$11.605.557</td>
+                  <td class="py-2.5 px-3 text-right">$2.980.737</td>
+                  <td class="py-2.5 px-3 text-right">$8.624.819</td>
+                  <td class="py-2.5 px-3 text-right">$10.004.790</td>
+                  <td class="py-2.5 px-3 text-right font-bold text-white bg-white/5">$1.043.258</td>
+                </tr>
+                <tr class="hover:bg-white/5">
+                  <td class="py-2.5 px-3 text-center font-bold text-white">Año 5</td>
+                  <td class="py-2.5 px-3 text-right">$10.004.790</td>
+                  <td class="py-2.5 px-3 text-right font-bold text-white">$11.605.557</td>
+                  <td class="py-2.5 px-3 text-right">$1.600.766</td>
+                  <td class="py-2.5 px-3 text-right">$10.004.790</td>
+                  <td class="py-2.5 px-3 text-right">$0</td>
+                  <td class="py-2.5 px-3 text-right font-bold text-white bg-white/5">$560.268</td>
+                </tr>
+              </tbody>
+              <tfoot>
+                <tr class="border-t-2 border-white bg-white text-black font-bold">
+                  <td class="py-2.5 px-3 text-center">TOTALES:</td>
+                  <td class="py-2.5 px-3 text-right">-</td>
+                  <td class="py-2.5 px-3 text-right font-black">$58.027.783</td>
+                  <td class="py-2.5 px-3 text-right font-black">$20.027.783</td>
+                  <td class="py-2.5 px-3 text-right font-black">$38.000.000</td>
+                  <td class="py-2.5 px-3 text-right">$0</td>
+                  <td class="py-2.5 px-3 text-right font-black bg-black text-white">$7.009.724</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- =====================================================================
+           TAB 4: CRITERIO C3 - FLUJO DE CAJA LIBRE (FCL) A 5 AÑOS
+           ===================================================================== -->
+      <div id="tab-cashflow-fcl" class="tab-content hidden flex flex-col gap-6">
+
+        <div class="border border-white/25 bg-hud-surface p-5 hud-brackets">
+          <div class="flex items-center justify-between border-b border-white/15 pb-3 mb-4">
+            <div class="flex items-center gap-3">
+              <span class="w-2 h-4 bg-white"></span>
+              <div>
+                <h3 class="text-sm font-bold tracking-wider font-tech uppercase text-white">
+                  ESTADO DE RESULTADOS Y PROYECCIÓN DE FLUJO DE CAJA LIBRE (FCL)
+                </h3>
+                <div class="text-[10px] text-white/50 font-mono tracking-wide">
+                  HORIZONTE 5 AÑOS // SUMA DE AMORTIZACIONES NO DESEMBOLSABLES Y VARIACIÓN KTNO
+                </div>
+              </div>
+            </div>
+            <div class="text-right">
+              <span class="border border-white bg-white text-black px-2 py-0.5 text-xs font-bold font-mono">
+                VPN = +$491.379.820 COP
+              </span>
+            </div>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-xs text-left border-collapse font-mono">
+              <thead>
+                <tr class="border-b border-white/20 bg-hud-elevated text-white/60">
+                  <th class="py-2.5 px-3 uppercase tracking-wider font-tech">Rubro Contable / Financiero</th>
+                  <th class="py-2.5 px-3 uppercase tracking-wider font-tech text-right">Año 0</th>
+                  <th class="py-2.5 px-3 uppercase tracking-wider font-tech text-right">Año 1</th>
+                  <th class="py-2.5 px-3 uppercase tracking-wider font-tech text-right">Año 2</th>
+                  <th class="py-2.5 px-3 uppercase tracking-wider font-tech text-right">Año 3</th>
+                  <th class="py-2.5 px-3 uppercase tracking-wider font-tech text-right">Año 4</th>
+                  <th class="py-2.5 px-3 uppercase tracking-wider font-tech text-right">Año 5</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-white/10 text-white/80">
+                <tr class="hover:bg-white/5">
+                  <td class="py-2 px-3 font-bold text-white">(+) Ingresos Operacionales (SaaS)</td>
+                  <td class="py-2 px-3 text-right">$0</td>
+                  <td class="py-2 px-3 text-right">$105.500.000</td>
+                  <td class="py-2 px-3 text-right">$214.000.000</td>
+                  <td class="py-2 px-3 text-right">$362.000.000</td>
+                  <td class="py-2 px-3 text-right">$542.500.000</td>
+                  <td class="py-2 px-3 text-right font-bold text-white">$757.500.000</td>
+                </tr>
+                <tr class="hover:bg-white/5">
+                  <td class="py-2 px-3 text-white/60">(-) Costos Operativos Variables</td>
+                  <td class="py-2 px-3 text-right">$0</td>
+                  <td class="py-2 px-3 text-right">($6.500.000)</td>
+                  <td class="py-2 px-3 text-right">($12.800.000)</td>
+                  <td class="py-2 px-3 text-right">($21.300.000)</td>
+                  <td class="py-2 px-3 text-right">($31.500.000)</td>
+                  <td class="py-2 px-3 text-right">($43.750.000)</td>
+                </tr>
+                <tr class="hover:bg-white/5">
+                  <td class="py-2 px-3 text-white/60">(-) Costos Operativos Fijos</td>
+                  <td class="py-2 px-3 text-right">$0</td>
+                  <td class="py-2 px-3 text-right">($64.800.000)</td>
+                  <td class="py-2 px-3 text-right">($71.280.000)</td>
+                  <td class="py-2 px-3 text-right">($79.560.000)</td>
+                  <td class="py-2 px-3 text-right">($89.523.900)</td>
+                  <td class="py-2 px-3 text-right">($101.615.131)</td>
+                </tr>
+                <tr class="bg-white/5 font-bold text-white">
+                  <td class="py-2 px-3">(=) EBITDA</td>
+                  <td class="py-2 px-3 text-right">$0</td>
+                  <td class="py-2 px-3 text-right">$34.200.000</td>
+                  <td class="py-2 px-3 text-right">$129.920.000</td>
+                  <td class="py-2 px-3 text-right">$261.140.000</td>
+                  <td class="py-2 px-3 text-right">$421.476.100</td>
+                  <td class="py-2 px-3 text-right">$612.134.869</td>
+                </tr>
+                <tr class="hover:bg-white/5 text-white/60">
+                  <td class="py-2 px-3">(-) Amortización Software (Intangibles 5A)</td>
+                  <td class="py-2 px-3 text-right">$0</td>
+                  <td class="py-2 px-3 text-right">($19.000.000)</td>
+                  <td class="py-2 px-3 text-right">($19.000.000)</td>
+                  <td class="py-2 px-3 text-right">($19.000.000)</td>
+                  <td class="py-2 px-3 text-right">($19.000.000)</td>
+                  <td class="py-2 px-3 text-right">($19.000.000)</td>
+                </tr>
+                <tr class="hover:bg-white/5 font-bold text-white">
+                  <td class="py-2 px-3">(=) EBIT (Utilidad Operativa)</td>
+                  <td class="py-2 px-3 text-right">$0</td>
+                  <td class="py-2 px-3 text-right">$15.200.000</td>
+                  <td class="py-2 px-3 text-right">$110.920.000</td>
+                  <td class="py-2 px-3 text-right">$242.140.000</td>
+                  <td class="py-2 px-3 text-right">$402.476.100</td>
+                  <td class="py-2 px-3 text-right">$593.134.869</td>
+                </tr>
+                <tr class="hover:bg-white/5 text-white/60">
+                  <td class="py-2 px-3">(-) Impuesto de Renta (T = 35%)</td>
+                  <td class="py-2 px-3 text-right">$0</td>
+                  <td class="py-2 px-3 text-right">($5.320.000)</td>
+                  <td class="py-2 px-3 text-right">($38.822.000)</td>
+                  <td class="py-2 px-3 text-right">($84.749.000)</td>
+                  <td class="py-2 px-3 text-right">($140.866.635)</td>
+                  <td class="py-2 px-3 text-right">($207.597.204)</td>
+                </tr>
+                <tr class="bg-white/5 font-bold text-white">
+                  <td class="py-2 px-3">(=) NOPAT (Utilidad Operativa Neta)</td>
+                  <td class="py-2 px-3 text-right">$0</td>
+                  <td class="py-2 px-3 text-right">$9.880.000</td>
+                  <td class="py-2 px-3 text-right">$72.098.000</td>
+                  <td class="py-2 px-3 text-right">$157.391.000</td>
+                  <td class="py-2 px-3 text-right">$261.609.465</td>
+                  <td class="py-2 px-3 text-right">$385.537.665</td>
+                </tr>
+                <tr class="hover:bg-white/5 font-bold text-white bg-white/10">
+                  <td class="py-2 px-3">(+) Reintegro Amortización (No desembolsable)</td>
+                  <td class="py-2 px-3 text-right">$0</td>
+                  <td class="py-2 px-3 text-right">+$19.000.000</td>
+                  <td class="py-2 px-3 text-right">+$19.000.000</td>
+                  <td class="py-2 px-3 text-right">+$19.000.000</td>
+                  <td class="py-2 px-3 text-right">+$19.000.000</td>
+                  <td class="py-2 px-3 text-right">+$19.000.000</td>
+                </tr>
+                <tr class="hover:bg-white/5 text-white/80">
+                  <td class="py-2 px-3">(-) Inversión de Capital (CAPEX)</td>
+                  <td class="py-2 px-3 text-right font-bold text-white">($95.000.000)</td>
+                  <td class="py-2 px-3 text-right">$0</td>
+                  <td class="py-2 px-3 text-right">$0</td>
+                  <td class="py-2 px-3 text-right">$0</td>
+                  <td class="py-2 px-3 text-right">$0</td>
+                  <td class="py-2 px-3 text-right">$0</td>
+                </tr>
+                <tr class="hover:bg-white/5 text-white/80">
+                  <td class="py-2 px-3">(-/+) Variación KTNO (Capital Trabajo)</td>
+                  <td class="py-2 px-3 text-right">$0</td>
+                  <td class="py-2 px-3 text-right">($5.000.000)</td>
+                  <td class="py-2 px-3 text-right">($8.000.000)</td>
+                  <td class="py-2 px-3 text-right">($12.000.000)</td>
+                  <td class="py-2 px-3 text-right">($15.000.000)</td>
+                  <td class="py-2 px-3 text-right">+$40.000.000</td>
+                </tr>
+                <tr class="border-t-2 border-white bg-white text-black font-black text-sm">
+                  <td class="py-3 px-3 uppercase font-tech">(=) FLUJO DE CAJA LIBRE (FCL):</td>
+                  <td class="py-3 px-3 text-right">($95.000.000)</td>
+                  <td class="py-3 px-3 text-right">+$23.880.000</td>
+                  <td class="py-3 px-3 text-right">+$83.098.000</td>
+                  <td class="py-3 px-3 text-right">+$164.391.000</td>
+                  <td class="py-3 px-3 text-right">+$265.609.465</td>
+                  <td class="py-3 px-3 text-right">+$444.537.665</td>
+                </tr>
+                <tr class="hover:bg-white/5 text-white/70">
+                  <td class="py-2 px-3">Flujo Descontado al CPPC (13.88%)</td>
+                  <td class="py-2 px-3 text-right">($95.000.000)</td>
+                  <td class="py-2 px-3 text-right">$20.969.442</td>
+                  <td class="py-2 px-3 text-right">$64.076.039</td>
+                  <td class="py-2 px-3 text-right">$111.310.379</td>
+                  <td class="py-2 px-3 text-right">$157.926.028</td>
+                  <td class="py-2 px-3 text-right">$232.097.932</td>
+                </tr>
+                <tr class="hover:bg-white/5 font-bold text-white bg-white/5">
+                  <td class="py-2 px-3">Flujo Descontado Acumulado (PRI)</td>
+                  <td class="py-2 px-3 text-right">($95.000.000)</td>
+                  <td class="py-2 px-3 text-right">($74.030.558)</td>
+                  <td class="py-2 px-3 text-right">($9.954.520)</td>
+                  <td class="py-2 px-3 text-right text-white">+$101.355.859</td>
+                  <td class="py-2 px-3 text-right">+$259.281.887</td>
+                  <td class="py-2 px-3 text-right bg-white text-black">+$491.379.820</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- =====================================================================
+           TAB 5: CRITERIO C4 - PUNTO DE EQUILIBRIO & SIMULADOR REACTIVO
+           ===================================================================== -->
+      <div id="tab-sensitivity-sim" class="tab-content hidden flex flex-col gap-6">
+
+        <!-- Break-Even Panel -->
+        <div class="border border-white/25 bg-hud-surface p-5 hud-brackets">
+          <div class="flex items-center justify-between border-b border-white/15 pb-3 mb-4">
+            <div class="flex items-center gap-3">
+              <span class="w-2 h-4 bg-white"></span>
+              <div>
+                <h3 class="text-sm font-bold tracking-wider font-tech uppercase text-white">
+                  PUNTO DE EQUILIBRIO OPERATIVO // AÑO 1 BASE
+                </h3>
+                <div class="text-[10px] text-white/50 font-mono tracking-wide">
+                  MARGEN DE CONTRIBUCIÓN UNITARIO (MCU) Y VOLUMEN CRÍTICO DE CLIENTES
+                </div>
+              </div>
+            </div>
+            <span class="border border-white px-2 py-0.5 text-xs font-bold text-white uppercase bg-white/5">
+              MARGEN SEGURIDAD: 30.4%
+            </span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+            <div class="border border-white/15 p-3.5 bg-hud-elevated">
+              <div class="text-[10px] text-white/50">PRECIO PROMEDIO (P)</div>
+              <div class="text-xl font-bold font-tech text-white my-1">$4.586.957</div>
+              <div class="text-[10px] text-white/60">Por suscripción anual</div>
+            </div>
+            <div class="border border-white/15 p-3.5 bg-hud-elevated">
+              <div class="text-[10px] text-white/50">COSTO VARIABLE (CVu)</div>
+              <div class="text-xl font-bold font-tech text-white my-1">$282.609</div>
+              <div class="text-[10px] text-white/60">Tokens IA + Pasarela</div>
+            </div>
+            <div class="border border-white/15 p-3.5 bg-hud-elevated">
+              <div class="text-[10px] text-white/50">MARGEN CONTRIB. (MCU)</div>
+              <div class="text-xl font-bold font-tech text-white my-1">$4.304.348</div>
+              <div class="text-[10px] text-white/60">93.84% sobre el precio</div>
+            </div>
+            <div class="border border-white p-3.5 bg-white text-black font-bold">
+              <div class="text-[10px] text-black/70">PUNTO EQUILIBRIO (Qe)</div>
+              <div class="text-2xl font-black font-tech my-1">16 CLIENTES</div>
+              <div class="text-[10px] text-black/80">$73.391.304 Facturación</div>
+            </div>
+            <div class="border border-white/15 p-3.5 bg-hud-elevated">
+              <div class="text-[10px] text-white/50">MARGEN SEGURIDAD</div>
+              <div class="text-xl font-bold font-tech text-white my-1">7 CLIENTES</div>
+              <div class="text-[10px] text-white/60">30.4% de holgura</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Live Cyberpunk Interactive Simulator -->
+        <div class="border border-white/30 bg-hud-surface p-5 hud-brackets">
+          <div class="flex items-center justify-between border-b border-white/15 pb-3 mb-4">
+            <div class="flex items-center gap-3">
+              <span class="w-2 h-4 bg-white animate-pulse"></span>
+              <div>
+                <h3 class="text-sm font-bold tracking-wider font-tech uppercase text-white">
+                  SIMULADOR MULTIVARIABLE EN TIEMPO REAL // PLAYGROUND HUD
+                </h3>
+                <div class="text-[10px] text-white/50 font-mono tracking-wide">
+                  AJUSTE DE CONTROLES TÁCTICOS Y RECÁLCULO DINÁMICO DE MÉTRICAS FINANCIERAS
+                </div>
+              </div>
+            </div>
+            <button id="btn-hud-reset-sim" class="border border-white/40 hover:border-white px-2.5 py-1 text-xs text-white/80 hover:text-white uppercase font-mono">
+              [RESET_DEFAULT]
+            </button>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+            <!-- Controls (5 Cols) -->
+            <div class="lg:col-span-5 border border-white/20 bg-black p-4 space-y-5">
+              
+              <!-- Slider 1 -->
+              <div>
+                <div class="flex justify-between text-xs font-mono mb-1.5">
+                  <span class="text-white/60">01. TASA DE CAMBIO (TRM USD/COP):</span>
+                  <span class="text-white font-bold" id="hud-val-trm">$4.200 COP</span>
+                </div>
+                <input type="range" id="hud-slider-trm" min="3600" max="5200" step="100" value="4200" class="w-full">
+                <div class="flex justify-between text-[10px] text-white/30 mt-1">
+                  <span>$3.600 (Apreciación)</span>
+                  <span>$5.200 (Crisis)</span>
+                </div>
+              </div>
+
+              <!-- Slider 2 -->
+              <div>
+                <div class="flex justify-between text-xs font-mono mb-1.5">
+                  <span class="text-white/60">02. VOLUMEN DE VENTAS (DEMANDA):</span>
+                  <span class="text-white font-bold" id="hud-val-sales">0% (Caso Base)</span>
+                </div>
+                <input type="range" id="hud-slider-sales" min="-30" max="40" step="5" value="0" class="w-full">
+                <div class="flex justify-between text-[10px] text-white/30 mt-1">
+                  <span>-30% (Pesimista)</span>
+                  <span>+40% (Optimista)</span>
+                </div>
+              </div>
+
+              <!-- Slider 3 -->
+              <div>
+                <div class="flex justify-between text-xs font-mono mb-1.5">
+                  <span class="text-white/60">03. TASA INTERÉS CRÉDITO (Kd):</span>
+                  <span class="text-white font-bold" id="hud-val-rate">16.0% E.A.</span>
+                </div>
+                <input type="range" id="hud-slider-rate" min="10" max="22" step="1" value="16" class="w-full">
+                <div class="flex justify-between text-[10px] text-white/30 mt-1">
+                  <span>10.0% (Bajo)</span>
+                  <span>22.0% (Alto)</span>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Dynamic Outputs (7 Cols) -->
+            <div class="lg:col-span-7 grid grid-cols-2 sm:grid-cols-3 gap-3">
+              
+              <!-- Featured Card: Sim VPN -->
+              <div class="col-span-2 sm:col-span-3 border border-white p-4 bg-white/5">
+                <div class="text-[10px] text-white/60 uppercase font-tech">VPN SIMULADO [VALOR PRESENTE NETO]</div>
+                <div class="text-3xl font-black font-tech text-white my-1" id="hud-sim-vpn">+$491.379.820</div>
+                <div class="text-xs text-white/80" id="hud-sim-vpn-diag">Altamente Viable · Proyecto genera valor económico sustancial</div>
+              </div>
+
+              <div class="border border-white/20 p-3 bg-hud-elevated">
+                <div class="text-[10px] text-white/50">TIR SIMULADA</div>
+                <div class="text-xl font-bold font-tech text-white" id="hud-sim-tir">91.86%</div>
+                <div class="text-[9px] text-white/60">Rentabilidad libre</div>
+              </div>
+
+              <div class="border border-white/20 p-3 bg-hud-elevated">
+                <div class="text-[10px] text-white/50">CPPC / WACC</div>
+                <div class="text-xl font-bold font-tech text-white" id="hud-sim-wacc">13.88%</div>
+                <div class="text-[9px] text-white/60">Tasa de corte</div>
+              </div>
+
+              <div class="border border-white/20 p-3 bg-hud-elevated">
+                <div class="text-[10px] text-white/50">RELACIÓN B/C</div>
+                <div class="text-xl font-bold font-tech text-white" id="hud-sim-rbc">6.17x</div>
+                <div class="text-[9px] text-white/60">Retorno por peso</div>
+              </div>
+
+              <div class="border border-white/20 p-3 bg-hud-elevated col-span-2 sm:col-span-3">
+                <div class="text-[10px] text-white/50">PAYBACK DESCONTADO (PRI)</div>
+                <div class="text-xl font-bold font-tech text-white" id="hud-sim-pri">2.09 AÑOS</div>
+                <div class="text-[10px] text-white/60">Recuperación estimada en el Mes 25.1 de operación</div>
+              </div>
+
+            </div>
+
+          </div>
+        </div>
+
+        <!-- 2D Sensitivity Cross-Matrix -->
+        <div class="border border-white/25 bg-hud-surface p-5 hud-brackets">
+          <div class="flex items-center justify-between border-b border-white/15 pb-3 mb-4">
+            <div class="flex items-center gap-3">
+              <span class="w-2 h-4 bg-white"></span>
+              <div>
+                <h3 class="text-sm font-bold tracking-wider font-tech uppercase text-white">
+                  MATRIZ BIDIMENSIONAL DE SENSIBILIDAD: VPN (COP) SEGÚN VENTAS Y TRM
+                </h3>
+                <div class="text-[10px] text-white/50 font-mono tracking-wide">
+                  EVALUACIÓN DE ESTRÉS CAMBIARIO Y COMERCIAL CRUZADO
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-xs text-left border-collapse font-mono">
+              <thead>
+                <tr class="border-b border-white/20 bg-hud-elevated text-white/60">
+                  <th class="py-2.5 px-3 uppercase tracking-wider font-tech">Demanda / TRM</th>
+                  <th class="py-2.5 px-3 uppercase tracking-wider font-tech text-right">TRM $3.800 (-9.5%)</th>
+                  <th class="py-2.5 px-3 uppercase tracking-wider font-tech text-right bg-white/10 text-white font-bold">TRM $4.200 (Base)</th>
+                  <th class="py-2.5 px-3 uppercase tracking-wider font-tech text-right">TRM $4.600 (+9.5%)</th>
+                  <th class="py-2.5 px-3 uppercase tracking-wider font-tech text-right">TRM $5.000 (+19%)</th>
+                  <th class="py-2.5 px-3 uppercase tracking-wider font-tech">Diagnóstico de Resiliencia</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-white/10 text-white/80">
+                <tr class="hover:bg-white/5">
+                  <td class="py-2.5 px-3 font-bold text-white">Ventas -30% (Pesimista Severo)</td>
+                  <td class="py-2.5 px-3 text-right">$266.540.000</td>
+                  <td class="py-2.5 px-3 text-right font-bold bg-white/5 text-white">$263.657.161</td>
+                  <td class="py-2.5 px-3 text-right">$260.774.000</td>
+                  <td class="py-2.5 px-3 text-right">$257.891.000</td>
+                  <td class="py-2.5 px-3 text-white/60">Altamente Viable (VPN &gt; $257M con dólar a $5.000)</td>
+                </tr>
+                <tr class="hover:bg-white/5">
+                  <td class="py-2.5 px-3 font-bold text-white">Ventas -15% (Pesimista Moderado)</td>
+                  <td class="py-2.5 px-3 text-right">$380.480.000</td>
+                  <td class="py-2.5 px-3 text-right font-bold bg-white/5 text-white">$377.156.309</td>
+                  <td class="py-2.5 px-3 text-right">$373.832.000</td>
+                  <td class="py-2.5 px-3 text-right">$370.508.000</td>
+                  <td class="py-2.5 px-3 text-white/60">Excelente Generación de Valor Económico</td>
+                </tr>
+                <tr class="bg-white/10 font-bold text-white">
+                  <td class="py-2.5 px-3">Ventas 0% (Caso Base Normal)</td>
+                  <td class="py-2.5 px-3 text-right">$495.498.662</td>
+                  <td class="py-2.5 px-3 text-right bg-white text-black font-black">$491.379.820</td>
+                  <td class="py-2.5 px-3 text-right">$487.260.978</td>
+                  <td class="py-2.5 px-3 text-right">$483.142.136</td>
+                  <td class="py-2.5 px-3">Escenario Central Altamente Rentable</td>
+                </tr>
+                <tr class="hover:bg-white/5">
+                  <td class="py-2.5 px-3 font-bold text-white">Ventas +15% (Optimista)</td>
+                  <td class="py-2.5 px-3 text-right">$604.640.000</td>
+                  <td class="py-2.5 px-3 text-right font-bold bg-white/5 text-white">$600.310.010</td>
+                  <td class="py-2.5 px-3 text-right">$595.980.000</td>
+                  <td class="py-2.5 px-3 text-right">$591.650.000</td>
+                  <td class="py-2.5 px-3 text-white/60">Superávit y Retorno Anticipado</td>
+                </tr>
+                <tr class="hover:bg-white/5">
+                  <td class="py-2.5 px-3 font-bold text-white">Ventas +30% (Expansión Acelerada)</td>
+                  <td class="py-2.5 px-3 text-right">$720.850.000</td>
+                  <td class="py-2.5 px-3 text-right font-bold bg-white/5 text-white">$716.382.510</td>
+                  <td class="py-2.5 px-3 text-right">$711.915.000</td>
+                  <td class="py-2.5 px-3 text-right">$707.447.000</td>
+                  <td class="py-2.5 px-3 text-white/60">Máxima Rentabilidad Empresarial</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- =====================================================================
+           TAB 6: CRITERIO C5 - LEGALTECH, ÉTICA IA & GREEN IT
+           ===================================================================== -->
+      <div id="tab-legal-ethics" class="tab-content hidden flex flex-col gap-6">
+
+        <!-- Web vs Mobile Terminal Comparison -->
+        <div class="border border-white/25 bg-hud-surface p-5 hud-brackets">
+          <div class="flex items-center justify-between border-b border-white/15 pb-3 mb-4">
+            <div class="flex items-center gap-3">
+              <span class="w-2 h-4 bg-white"></span>
+              <div>
+                <h3 class="text-sm font-bold tracking-wider font-tech uppercase text-white">
+                  SUSTENTACIÓN ARQUITECTÓNICA: PLATAFORMA WEB SAAS VS APLICACIÓN MÓVIL
+                </h3>
+                <div class="text-[10px] text-white/50 font-mono tracking-wide">
+                  RAZONES FINANCIERAS, COMISIONES DE APP STORES (15-30%) Y ERGONOMÍA B2B
+                </div>
+              </div>
+            </div>
+            <span class="border border-white bg-white text-black px-2 py-0.5 text-xs font-bold font-mono">
+              OPCIÓN: WEB SAAS
+            </span>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            
+            <div class="border border-white bg-white/5 p-4 hud-brackets">
+              <div class="flex items-center justify-between border-b border-white pb-2 mb-3">
+                <span class="font-tech font-bold text-xs uppercase">PLATAFORMA WEB SAAS B2B [RECRUITPRO]</span>
+                <span class="bg-white text-black px-1.5 py-0.2 text-[9px] font-bold">ÓPTIMA</span>
+              </div>
+              <ul class="space-y-2 text-xs font-mono text-white/80">
+                <li>• <strong>Comisión Pasarela Web:</strong> 2.99% + $900 COP (Wompi/PayU/Stripe). Retiene el <strong>~97%</strong> del flujo de ingresos.</li>
+                <li>• <strong>Ergonomía B2B:</strong> Pantalla dividida en escritorio (Split-Screen PDF vs Scorecard IA) y tableros Kanban multi-columna.</li>
+                <li>• <strong>Cero Fricción para Candidatos:</strong> Postulación web directa en <code>empleos.html</code> sin descargas de 80MB.</li>
+                <li>• <strong>Despliegue Continuo:</strong> Actualizaciones inmediatas sin burocracia de aprobación externa.</li>
+              </ul>
+            </div>
+
+            <div class="border border-white/20 bg-hud-surface p-4 hud-brackets">
+              <div class="flex items-center justify-between border-b border-white/15 pb-2 mb-3 text-white/60">
+                <span class="font-tech font-bold text-xs uppercase">APLICACIÓN MÓVIL [APP STORE / PLAY STORE]</span>
+                <span class="border border-white/30 px-1.5 py-0.2 text-[9px]">RECHAZADA</span>
+              </div>
+              <ul class="space-y-2 text-xs font-mono text-white/60">
+                <li>• <strong>Peaje de Tiendas (15% a 30%):</strong> Apple y Google retendrían entre $15M y $110M COP anuales de comisiones.</li>
+                <li>• <strong>Pantallas Incompatibles:</strong> 6 pulgadas impiden revisar expedientes curriculares de 4 páginas de forma ágil.</li>
+                <li>• <strong>Fricción &amp; Abandono:</strong> Pérdida del 60% de candidatos por obligar a instalar una app para postularse.</li>
+                <li>• <strong>Sobrecosto CAPEX:</strong> Duplicaría el costo de desarrollo a más de $180M COP (iOS + Android).</li>
+              </ul>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- 3 Industrial Cards: LegalTech, Ética & Green IT -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+          <!-- Card 1: LegalTech -->
+          <div class="border border-white/20 bg-hud-surface p-5 hud-brackets">
+            <div class="flex items-center gap-2 border-b border-white/15 pb-3 mb-3">
+              <span class="w-1.5 h-3 bg-white"></span>
+              <h4 class="font-tech font-bold text-xs uppercase text-white">LEGALTECH &amp; HABEAS DATA</h4>
+            </div>
+            <div class="space-y-2.5 text-xs text-white/70 font-mono">
+              <p>• <strong>Ley 1581 / Dec 1377:</strong> Consentimiento informado en <code>registro.html</code> y aviso de privacidad.</p>
+              <p>• <strong>Derecho al Olvido (GDPR Art. 17):</strong> Implementado en <code>RetentionService.php</code> mediante purga automática a los 24 meses (<code>RETENTION_MONTHS = 24</code>).</p>
+              <p>• <strong>Cifrado Criptográfico:</strong> Cifrado AES-256 en S3/SQLite, tokens CSRF y cookies seguras HttpOnly.</p>
+            </div>
+          </div>
+
+          <!-- Card 2: Ética IA -->
+          <div class="border border-white/20 bg-hud-surface p-5 hud-brackets">
+            <div class="flex items-center gap-2 border-b border-white/15 pb-3 mb-3">
+              <span class="w-1.5 h-3 bg-white"></span>
+              <h4 class="font-tech font-bold text-xs uppercase text-white">ÉTICA EN IA (TIC-01 / CEIS001)</h4>
+            </div>
+            <div class="space-y-2.5 text-xs text-white/70 font-mono">
+              <p>• <strong>Mitigación de Sesgos:</strong> <code>AiService.php</code> evalúa solo competencias técnicas y experiencia, eliminando género, edad y foto.</p>
+              <p>• <strong>Human-in-the-Loop:</strong> La IA emite un dictamen consultivo explicable; la decisión final es siempre del reclutador humano.</p>
+              <p>• <strong>Normativa UNESCO:</strong> Alineación con estándares de transparencia y el CONPES 3975 de Colombia.</p>
+            </div>
+          </div>
+
+          <!-- Card 3: Green IT -->
+          <div class="border border-white/20 bg-hud-surface p-5 hud-brackets">
+            <div class="flex items-center gap-2 border-b border-white/15 pb-3 mb-3">
+              <span class="w-1.5 h-3 bg-white"></span>
+              <h4 class="font-tech font-bold text-xs uppercase text-white">GREEN IT &amp; SOSTENIBILIDAD</h4>
+            </div>
+            <div class="space-y-2.5 text-xs text-white/70 font-mono">
+              <p>• <strong>Cero Papel:</strong> Erradicación física de ~25.000 hojas de vida impresas por cliente/año, preservando agua y árboles.</p>
+              <p>• <strong>Código Ultraligero:</strong> Arquitectura PHP Nativo Modular con footprint &lt;32MB RAM, reduciendo el consumo eléctrico en un 45%.</p>
+              <p>• <strong>Cloud Carbon Free:</strong> Servidores AWS en regiones con 100% energía renovable.</p>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </main>
+
+    <!-- =========================================================================
+         TECHNICAL FOOTER // HUD CHASSIS
+         ========================================================================= -->
+    <footer class="border-t border-white/20 bg-black py-4 px-4 lg:px-6 text-xs text-white/50 font-mono">
+      <div class="max-w-[1720px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <span class="text-white font-bold font-tech">RECRUITPRO_FINANCIAL_HUD</span>
+          <span>//</span>
+          <span>INGENIERÍA ECONÓMICA · CECAR</span>
+        </div>
+        <div>
+          ESTÉTICA: MINIMALISMO CYBERPUNK MONOCROMÁTICO (BLACK &amp; WHITE)
+        </div>
+        <div class="text-[11px] text-white/30">
+          SYS_BUILD: 2026.11.17 // SEC_LEVEL: HIGH
+        </div>
+      </div>
+    </footer>
+
+  </div>
+
+  <!-- =========================================================================
+       TERMINAL SCRIPT LOGIC (CHART.JS + HUD TAB CONTROLLER + LIVE SIMULATOR)
+       ========================================================================= -->
+  <script>
+    // Initialize Lucide Icons
+    lucide.createIcons();
+
+    // Live UTC Clock updater
+    function updateClock() {
+      const now = new Date();
+      const timeStr = now.toISOString().slice(11, 19) + ' UTC';
+      const el = document.getElementById('live-time-code');
+      if (el) el.textContent = timeStr;
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // Command Tab Controller
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    const tabPanes = document.querySelectorAll('.tab-content');
+
+    tabButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        // Reset button styles
+        tabButtons.forEach(b => {
+          b.classList.remove('bg-white', 'text-black', 'active');
+          b.classList.add('text-white/60');
+        });
+
+        // Set active button
+        btn.classList.add('bg-white', 'text-black', 'active');
+        btn.classList.remove('text-white/60');
+
+        // Toggle Tab Panes
+        const targetId = btn.getAttribute('data-tab');
+        tabPanes.forEach(pane => {
+          if (pane.id === targetId) {
+            pane.classList.remove('hidden');
+          } else {
+            pane.classList.add('hidden');
+          }
+        });
+
+        // Resize chart if showing tab-dashboard
+        if (targetId === 'tab-dashboard' && window.hudFlowChartInstance) {
+          window.hudFlowChartInstance.resize();
+        }
+      });
+    });
+
+    // Chart.js Stark Monochrome Initialization
+    let hudFlowChartInstance = null;
+    function initHudChart() {
+      const ctx = document.getElementById('hudFlowChart');
+      if (!ctx) return;
+
+      const labels = ['Año 0', 'Año 1', 'Año 2', 'Año 3', 'Año 4', 'Año 5'];
+      const nominalFlows = [-95.0, 23.88, 83.10, 164.39, 265.61, 444.54];
+      const discountedFlows = [-95.0, 20.97, 64.08, 111.31, 157.93, 232.10];
+      const cumulativeDiscounted = [-95.0, -74.03, -9.95, 101.36, 259.28, 491.38];
+
+      hudFlowChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              type: 'bar',
+              label: 'Flujo Libre Nominal ($M)',
+              data: nominalFlows,
+              backgroundColor: '#FFFFFF',
+              borderRadius: 0,
+              borderWidth: 1,
+              borderColor: '#FFFFFF',
+              barPercentage: 0.45,
+              order: 2
+            },
+            {
+              type: 'bar',
+              label: 'Flujo Descontado 13.88% ($M)',
+              data: discountedFlows,
+              backgroundColor: 'rgba(255, 255, 255, 0.25)',
+              borderRadius: 0,
+              borderWidth: 1,
+              borderColor: 'rgba(255, 255, 255, 0.5)',
+              barPercentage: 0.45,
+              order: 3
+            },
+            {
+              type: 'line',
+              label: 'Recuperación Acumulada ($M)',
+              data: cumulativeDiscounted,
+              borderColor: '#FFFFFF',
+              borderWidth: 2,
+              pointBackgroundColor: '#000000',
+              pointBorderColor: '#FFFFFF',
+              pointBorderWidth: 2,
+              pointRadius: 5,
+              pointHoverRadius: 7,
+              tension: 0, // Strict straight line (no bezier curves!)
+              order: 1
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: false // Using custom HUD legend
+            },
+            tooltip: {
+              backgroundColor: '#000000',
+              borderColor: '#FFFFFF',
+              borderWidth: 1,
+              titleFont: { family: 'JetBrains Mono', size: 12 },
+              bodyFont: { family: 'JetBrains Mono', size: 11 },
+              cornerRadius: 0,
+              padding: 10,
+              callbacks: {
+                label: function(context) {
+                  return context.dataset.label + ': $' + context.parsed.y.toFixed(2) + 'M COP';
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              grid: {
+                color: 'rgba(255, 255, 255, 0.08)',
+                drawBorder: true,
+                borderColor: '#FFFFFF'
+              },
+              ticks: {
+                color: 'rgba(255, 255, 255, 0.7)',
+                font: { family: 'JetBrains Mono', size: 11 }
+              }
+            },
+            y: {
+              grid: {
+                color: 'rgba(255, 255, 255, 0.08)',
+                drawBorder: true,
+                borderColor: '#FFFFFF'
+              },
+              ticks: {
+                color: 'rgba(255, 255, 255, 0.7)',
+                font: { family: 'JetBrains Mono', size: 11 },
+                callback: function(value) { return '$' + value + 'M'; }
+              }
+            }
+          }
+        }
+      });
+      window.hudFlowChartInstance = hudFlowChartInstance;
+    }
+
+    // Interactive Terminal Simulator Logic
+    const sliderTrm = document.getElementById('hud-slider-trm');
+    const sliderSales = document.getElementById('hud-slider-sales');
+    const sliderRate = document.getElementById('hud-slider-rate');
+
+    const valTrm = document.getElementById('hud-val-trm');
+    const valSales = document.getElementById('hud-val-sales');
+    const valRate = document.getElementById('hud-val-rate');
+
+    const simVpn = document.getElementById('hud-sim-vpn');
+    const simTir = document.getElementById('hud-sim-tir');
+    const simWacc = document.getElementById('hud-sim-wacc');
+    const simRbc = document.getElementById('hud-sim-rbc');
+    const simPri = document.getElementById('hud-sim-pri');
+    const simVpnDiag = document.getElementById('hud-sim-vpn-diag');
+    const btnResetSim = document.getElementById('btn-hud-reset-sim');
+
+    function calculateHudSimulation() {
+      const trm = parseFloat(sliderTrm.value);
+      const salesPct = parseFloat(sliderSales.value) / 100.0;
+      const kdNominal = parseFloat(sliderRate.value) / 100.0;
+
+      // Update text displays
+      valTrm.textContent = '$' + trm.toLocaleString('es-CO') + ' COP';
+      valSales.textContent = (salesPct > 0 ? '+' : '') + (salesPct * 100).toFixed(0) + '% ' + (salesPct === 0 ? '(Caso Base)' : '');
+      valRate.textContent = (kdNominal * 100).toFixed(1) + '% E.A.';
+
+      // Mathematical logic
+      const wd = 0.40;
+      const we = 0.60;
+      const t = 0.35;
+      const ke = 0.1620;
+      const kdNet = kdNominal * (1 - t);
+      const wacc = (wd * kdNet) + (we * ke);
+
+      const capex = 95000000;
+      const baseRev = [105500000, 214000000, 362000000, 542500000, 757500000];
+      const baseOpexFijo = [64800000, 71280000, 79560000, 89523900, 101615131];
+      const baseAws = [8400000, 9660000, 11109000, 12775350, 14691653];
+      const baseVar = [6500000, 12800000, 21300000, 31500000, 43750000];
+      const amort = capex / 5.0; // 19M
+      const baseDktno = [-5000000, -8000000, -12000000, -15000000, 40000000];
+
+      const trmMult = trm / 4200.0;
+      const salesMult = 1.0 + salesPct;
+
+      let fcl = [];
+      for (let i = 0; i < 5; i++) {
+        const rev = baseRev[i] * salesMult;
+        const awsCost = baseAws[i] * trmMult;
+        const fixedCost = (baseOpexFijo[i] - baseAws[i]) + awsCost;
+        const varCost = baseVar[i] * salesMult * (0.5 + 0.5 * trmMult);
+
+        const ebitda = rev - fixedCost - varCost;
+        const ebit = ebitda - amort;
+        const tax = Math.max(0, ebit * t);
+        const nopat = ebit - tax;
+        const dktno = baseDktno[i] * salesMult;
+
+        const flujo = nopat + amort + dktno;
+        fcl.push(flujo);
+      }
+
+      let vpFlujos = 0;
+      let cumDesc = 0;
+      let pri = 5.0;
+      let recovered = false;
+
+      for (let i = 0; i < 5; i++) {
+        const fd = fcl[i] / Math.pow(1 + wacc, i + 1);
+        vpFlujos += fd;
+        const prev = cumDesc;
+        cumDesc += fd;
+
+        if (cumDesc >= capex && !recovered) {
+          pri = i + (capex - prev) / fd;
+          recovered = true;
+        }
+      }
+
+      const npv = vpFlujos - capex;
+      const rbc = vpFlujos / capex;
+
+      // IRR via Newton-Raphson
+      let irr = 0.5;
+      for (let iter = 0; iter < 40; iter++) {
+        let val = -capex;
+        let dval = 0;
+        for (let i = 0; i < 5; i++) {
+          val += fcl[i] / Math.pow(1 + irr, i + 1);
+          dval += -(i + 1) * fcl[i] / Math.pow(1 + irr, i + 2);
+        }
+        irr = irr - val / dval;
+      }
+
+      simVpn.textContent = (npv >= 0 ? '+$' : '-$') + Math.abs(Math.round(npv)).toLocaleString('es-CO');
+      simTir.textContent = (irr * 100).toFixed(2) + '%';
+      simWacc.textContent = (wacc * 100).toFixed(2) + '%';
+      simRbc.textContent = rbc.toFixed(2) + 'x';
+      simPri.textContent = pri < 5 ? pri.toFixed(2) + ' AÑOS' : '> 5 AÑOS';
+
+      if (npv > 300000000) {
+        simVpnDiag.textContent = 'Altamente Viable · Proyecto genera valor económico sustancial';
+      } else if (npv > 0) {
+        simVpnDiag.textContent = 'Viable y Rentable · Supera la tasa de corte';
+      } else {
+        simVpnDiag.textContent = 'No Viable · Ajustar estructura de precios o costos';
+      }
+    }
+
+    [sliderTrm, sliderSales, sliderRate].forEach(el => {
+      el.addEventListener('input', calculateHudSimulation);
+    });
+
+    btnResetSim.addEventListener('click', () => {
+      sliderTrm.value = 4200;
+      sliderSales.value = 0;
+      sliderRate.value = 16;
+      calculateHudSimulation();
+    });
+
+    // On Load Initializer
+    window.addEventListener('DOMContentLoaded', () => {
+      initHudChart();
+      calculateHudSimulation();
+    });
+  </script>
+</body>
+</html>
